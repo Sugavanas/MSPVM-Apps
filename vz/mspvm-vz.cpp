@@ -6,6 +6,9 @@
 using namespace std;
 
 void createVM();
+void removeTemplate();
+
+bool checkArgs(int total, string message = "Invalid Params")
 
 int ac;
 char ** av;
@@ -20,9 +23,9 @@ int main(int argc, char* argv[])
         {
             createVM();
         }
-        else if(strcmp(argv[1], "--runscript") == 0)
+        else if(strcmp(argv[1], "--removetemplate") == 0)
         {
-          
+            undeployTemplates();
         }
         else
         {
@@ -41,18 +44,8 @@ int main(int argc, char* argv[])
 void createVM()
 {
     system(string("whoami").c_str());
-    if(ac >= 16 && av[2] != "" )
+    if(checkArgs(14, "createvm: invalid params") !== false)
     {
-	
-        for(int i=2; i<14; i++)
-        {
-            if(av[i] == "")
-            {
-                cout << "createvm: invalid params." <<endl;
-                //return 0;
-            }
-        }
-        
         string command = "/usr/sbin/vzctl create  "+std::string(av[2])+" --ostemplate "+std::string(av[3])+" --config basic --hostname "+std::string(av[4])+";"
         "/usr/sbin/vzctl set  "+std::string(av[2])+" --diskspace "+std::string(av[5])+"g:"+std::string(av[5])+"g --save;"
         "/usr/sbin/vzctl set  "+std::string(av[2])+" --diskinodes "+std::string(av[6])+":"+std::string(av[6])+" --save;"
@@ -68,6 +61,45 @@ void createVM()
         system(command.c_str());
         //return 1;            
     }
-    cout << "createvm: not enough paramteres" <<endl;
     //return 0;
+}
+
+void destroyVM()
+{
+    if(checkArgs(1, "destroyVM: invalid params") !== false)
+    {
+        string command = "sudo /usr/sbin/vzctl stop "+std::string(av[2])+";"
+                        "sudo /usr/sbin/vzctl destroy "+std::string(av[2])+";"
+
+        system(command.c_str());               
+    }
+}
+
+void removeTemplate()
+{
+    if(checkArgs(1, "removeTemplate: invalid params") !== false)
+    {
+        string command = "/usr/sbin/vzpkg remove template " + std::string(av[2]);
+        system(command.c_str());
+    }
+}
+
+bool checkArgs(int total, string message = "Invalid Params")
+{
+    total = total + 2; //add two args to the total args as arg[0] and arg[1] are used in calling the function.
+
+    if(ac >= total)
+    {
+        for(int i=2; i<(total-2); i++)
+        {
+            if(av[i] == "")
+            {
+                cout << message <<endl;
+                return false;
+            }
+        }
+        return true;
+    }
+    cout << 'not enough parguments' <<endl;
+    return false;
 }
